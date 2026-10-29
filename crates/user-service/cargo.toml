@@ -1,0 +1,17 @@
+[package]
+name = "universal_a2dp_service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ipc-protocol = { path = "../ipc-protocol" }
+windows-sys = { version = "0.52", features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Ioctl",
+    "Win32_System_Threading",
+    "Win32_Media_Audio",
+] }
+
+[build-dependencies]
+cc = "1.0"
