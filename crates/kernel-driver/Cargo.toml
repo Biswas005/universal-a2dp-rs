@@ -1,0 +1,22 @@
+[package]
+name = "universal_a2dp"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.wdk.driver-model]
+driver-type = "KMDF"
+kmdf-version-major = 1
+target-kmdf-version-minor = 33
+
+[dependencies]
+ipc-protocol = { path = "../ipc-protocol" }
+wdk = "0.3"
+wdk-sys = "0.4"
+wdk-alloc = "0.3"
+wdk-panic = "0.3"
+
+[build-dependencies]
+wdk-build = "0.4"

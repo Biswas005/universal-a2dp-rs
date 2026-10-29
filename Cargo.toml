@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "crates/ipc-protocol",
+    "crates/kernel-driver",
+    "crates/user-service",
+]
+resolver = "2"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+lto = true
