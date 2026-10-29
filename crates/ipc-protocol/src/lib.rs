@@ -1,7 +1,5 @@
 #![no_std]
 
-/// Custom IOCTL codes for communicating between universal_a2dp_svc.exe and universal_a2dp.sys
-/// CTL_CODE(FILE_DEVICE_SOUND, Function, METHOD_BUFFERED, FILE_ANY_ACCESS)
 pub const IOCTL_A2DP_GET_HEADPHONE_CAPS: u32 = (0x0000001d << 16) | (0x800 << 2);
 pub const IOCTL_A2DP_SET_CODEC_CONFIG: u32   = (0x0000001d << 16) | (0x801 << 2);
 pub const IOCTL_A2DP_FETCH_PCM_CHUNK: u32    = (0x0000001d << 16) | (0x802 << 2);
@@ -17,22 +15,43 @@ pub enum NegotiatedCodec {
     LhdcV5     = 4,
 }
 
-/// Sent from User Service -> Kernel Driver to configure the AVDTP stream
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct ExportedSepCapability {
+    pub seid: u8,
+    pub codec_type: u8,
+    pub supports_delay_report: u8,
+    pub cie_len: u8,
+    pub vendor_id: u32,
+    pub codec_id: u16,
+    pub _pad: u16,
+    pub cie_bytes: [u8; 24],
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct HeadphoneCapabilitiesResponse {
+    pub bt_address: u64,
+    pub negotiated_mtu: u16,
+    pub active_seid: u8,
+    pub sep_count: u8,
+    pub seps: [ExportedSepCapability; 8],
+}
+
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct AvdtpSetConfigRequest {
-    pub acp_seid: u8,              // Target Headphone Stream End Point ID
-    pub int_seid: u8,              // Local Initiator SEID
+    pub acp_seid: u8,
+    pub int_seid: u8,
     pub codec: NegotiatedCodec,
-    pub sample_rate: u32,          // 44100, 48000, 96000, 192000
-    pub bits_per_sample: u8,       // 16, 24, 32
-    pub capability_len: u8,        // Length of the capability payload below
-    pub capability_bytes: [u8; 16],// Raw A2DP Vendor-Specific CIE bytes
+    pub sample_rate: u32,
+    pub bits_per_sample: u8,
+    pub capability_len: u8,
+    pub capability_bytes: [u8; 16],
 }
 
-/// Sent from User Service -> Kernel Driver containing an encoded L2CAP media packet
 #[repr(C)]
 pub struct EncodedL2capFrame {
     pub length: u16,
-    pub data: [u8; 1024],          // Max L2CAP MTU payload (e.g., 672-1005 bytes)
+    pub data: [u8; 1024],
 }

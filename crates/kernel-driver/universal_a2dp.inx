@@ -1,0 +1,87 @@
+;=============================================================================
+; universal_a2dp.inx
+; Universal Rust Bluetooth A2DP Driver (LHDC v5 / LDAC / aptX HD / SBC-XQ)
+; Replaces Microsoft BthA2dp.sys for targeted Bluetooth Audio Sink devices
+;=============================================================================
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = MEDIA
+ClassGuid   = {4d36e96c-e325-11ce-bfc1-08002be10318}
+Provider    = %ProviderName%
+CatalogFile = universal_a2dp.cat
+DriverVer   = 10/29/2026,1.0.0.0
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir = 13 ; DriverStore (Windows 11 isolated driver package directory)
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+universal_a2dp.sys = 1,,
+
+;=============================================================================
+; Manufacturer & Hardware ID Matching
+;=============================================================================
+
+[Manufacturer]
+%ManufacturerName% = Standard,NT$ARCH$.10.0...22000
+
+[Standard.NT$ARCH$.10.0...22000]
+; Matches the standard Bluetooth A2DP Audio Sink Service UUID on Windows 11
+%DeviceDesc% = UniversalA2dp_Device, BTHENUM\{0000110b-0000-1000-8000-00805f9b34fb}
+
+;=============================================================================
+; Installation Sections
+;=============================================================================
+
+[UniversalA2dp_Device.NT]
+Include   = bth.inf
+Needs     = BthPort.NT
+CopyFiles = Drivers_Dir
+
+[Drivers_Dir]
+universal_a2dp.sys
+
+[UniversalA2dp_Device.NT.HW]
+Include = bth.inf
+Needs   = BthPort.NT.HW
+
+;=============================================================================
+; Service Configuration (KMDF Ring-0 Driver)
+;=============================================================================
+
+[UniversalA2dp_Device.NT.Services]
+AddService = universal_a2dp, %SPSVCINST_ASSOCSERVICE%, UniversalA2dp_Service_Inst
+
+[UniversalA2dp_Service_Inst]
+DisplayName    = %ServiceDesc%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\universal_a2dp.sys
+LoadOrderGroup = Extended Base
+
+;=============================================================================
+; WDF / KMDF Co-Installer Directives
+;=============================================================================
+
+[UniversalA2dp_Device.NT.Wdf]
+KmdfService = universal_a2dp, UniversalA2dp_wdfsect
+
+[UniversalA2dp_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+;=============================================================================
+; Localizable Strings
+;=============================================================================
+
+[Strings]
+SPSVCINST_ASSOCSERVICE = 0x00000002
+ProviderName           = "UniversalA2DP Open Source Project"
+ManufacturerName       = "Savitech / Sony / Qualcomm Universal Rust Stack"
+DiskName               = "Universal A2DP Hi-Res Driver Installation Disk"
+DeviceDesc             = "Universal A2DP Hi-Res Sink (LHDC v5 / LDAC / aptX HD)"
+ServiceDesc            = "Universal Rust Bluetooth A2DP Kernel Driver"
